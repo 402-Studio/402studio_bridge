@@ -1,0 +1,21 @@
+{
+  "name": "402studio_bridge",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "bun@1.4.2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/402-Studio/402studio_bridge.git"
+  },
+  "scripts": {
+    "check": "bun scripts/check.ts",
+    "package": "bun scripts/package.ts",
+    "sync-version": "bun scripts/sync-version.ts",
+    "release": "bunx bumpp"
+  },
+  "devDependencies": {
+    "bumpp": "^12.3.0",
+    "fflate": "^0.8.3"
+  }
+}

@@ -1,6 +1,6 @@
 BridgeInterface = {}
 
-local blank = {progress = 'standalone', target = 'none'}
+local blank = {progress = 'standalone', target = 'none', textUI = 'standalone', context = 'standalone'}
 
 function BridgeInterface.custom()
     local custom = Config.CustomFramework

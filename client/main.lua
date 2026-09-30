@@ -1,5 +1,9 @@
 local runs, serial = {}, 0
 
+local function progressOwner()
+    return GetInvokingResource() or GetCurrentResourceName()
+end
+
 local function allowed()
     local caller = GetInvokingResource()
     return not caller or BridgeRegistry.allowed(caller)
@@ -20,22 +24,24 @@ exports('StartProgress', function(value)
         return nil
     end
     if not BridgeInterface.available('progress') then return nil end
+    for _, run in pairs(runs) do if not run.done then return nil end end
     local adapter, _, resource = BridgeInterface.resolve('progress')
     serial = serial + 1
     local id = serial
-    runs[id] = {done = false, cancelled = false}
+    runs[id] = {done = false, cancelled = false, owner = progressOwner(), adapter = adapter, resource = resource}
     CreateThread(function()
+        if not runs[id] then return end
         local ok, result = pcall(adapter.start, value, resource)
         local run = runs[id]
         if not run then return end
-        run.done, run.cancelled = true, ok and result == false
+        run.done, run.cancelled = true, not ok or result ~= true
     end)
     return id
 end)
 
 exports('ProgressResult', function(id)
     local run = runs[id]
-    if not run then return true, false end
+    if not allowed() or not run or run.owner ~= progressOwner() then return true, true end
     if not run.done then return false, false end
     runs[id] = nil
     return true, run.cancelled == true
@@ -43,25 +49,37 @@ end)
 
 exports('CancelProgress', function(id)
     if not allowed() then return false end
-    if id and runs[id] and runs[id].done then return false end
-    local adapter, _, resource = BridgeInterface.resolve('progress')
-    if not adapter then return false end
-    pcall(adapter.cancel, id, resource)
-    return true
+    local run = runs[id]
+    if not run or run.done or run.owner ~= progressOwner() then return false end
+    local ok = pcall(run.adapter.cancel, id, run.resource)
+    runs[id] = nil
+    return ok
 end)
 
 exports('ProgressActive', function()
     local adapter, _, resource = BridgeInterface.resolve('progress')
+    for _, run in pairs(runs) do
+        if not run.done then adapter, resource = run.adapter, run.resource; break end
+    end
     if not adapter then return false end
     local ok, result = pcall(adapter.active, resource)
     return ok and result == true
+end)
+
+AddEventHandler('onResourceStop', function(resource)
+    for id, run in pairs(runs) do
+        if run.owner == resource or run.resource == resource or resource == GetCurrentResourceName() then
+            if not run.done and run.resource ~= resource then pcall(run.adapter.cancel, id, run.resource) end
+            runs[id] = nil
+        end
+    end
 end)
 
 exports('AddVehicleTarget', function(options)
     if not allowed() or type(options) ~= 'table' or #options == 0 then return false end
     for _, option in ipairs(options) do
         if type(option.name) ~= 'string' or type(option.label) ~= 'string'
-            or type(option.onSelect) ~= 'function' then return false end
+            or not BridgeRegistry.callable(option.onSelect) then return false end
     end
     if not BridgeInterface.available('target') then return false end
     local adapter, _, resource = BridgeInterface.resolve('target')
@@ -91,6 +109,8 @@ exports('GetStatus', function()
             notify = BridgeInterface.status('notify'),
             progress = BridgeInterface.status('progress'),
             target = BridgeInterface.status('target'),
+            textUI = BridgeInterface.status('textUI'),
+            context = BridgeInterface.status('context'),
         },
     }
 end)

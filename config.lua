@@ -15,6 +15,8 @@ Config = {
     FirstParty = { prefix = '402studio_', author = '402-Studio' },
     AllowedResources = allowedResources,
     Notify = { adapter = 'auto' },
+    TextUI = { adapter = 'auto', resources = { ox = 'ox_lib' }, priority = { 'ox' } },
+    Context = { adapter = 'auto', resources = { ox = 'ox_lib' }, priority = { 'ox' } },
     Progress = {
         adapter = 'auto',
         resources = { ox = 'ox_lib', qb = 'progressbar' },

@@ -15,8 +15,11 @@ client_scripts {
     'adapters/notify/**/client.lua',
     'adapters/progress/**/client.lua',
     'adapters/target/**/client.lua',
+    'adapters/text-ui/**/client.lua',
+    'adapters/context/**/client.lua',
     'client/interface.lua',
     'client/main.lua',
+    'client/ui.lua',
 }
 
 server_scripts {

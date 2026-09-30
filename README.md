@@ -111,9 +111,9 @@ Adapters follow one path pattern:
 adapters/<module>/<provider>/<context>.lua
 ```
 
-Built-in providers use `adapters/framework`, `adapters/inventory`, `adapters/vehicle`, `adapters/notify`, `adapters/progress`, and `adapters/target`. Custom frameworks use only `Config.CustomFramework`.
+Built-in providers use `adapters/framework`, `adapters/inventory`, `adapters/vehicle`, `adapters/notify`, `adapters/progress`, `adapters/target`, `adapters/text-ui`, and `adapters/context`. Custom frameworks use only `Config.CustomFramework`.
 
-Register every adapter through `BridgeRegistry.register(kind, name, adapter)`. Supported kinds are `framework`, `inventory`, `vehicle`, `notify`, `progress`, and `target`. The registry validates each contract during resource startup.
+Register every adapter through `BridgeRegistry.register(kind, name, adapter)`. Supported kinds are `framework`, `inventory`, `vehicle`, `notify`, `progress`, `target`, `textUI`, and `context`. The registry validates each contract during resource startup.
 
 Each adapter implements `connect(resource)`, `player(core, source)`, `data(player)`, `group(core, player, source, groups)`, `balance(core, player, source, account)`, `remove(core, player, source, account, amount, reason)`, and `add` with the same arguments as `remove`. Operations must finish synchronously. Mutations return true only after applying the exact amount; false must leave the account unchanged. Return fresh normalized data from `data`.
 
@@ -137,7 +137,15 @@ Resources own their schemas, persistence, item definitions, and gameplay rules. 
 
 `AddVehicleTarget(options)` registers vehicle target options through the active targeting resource and `RemoveVehicleTarget(names)` removes them. `TargetAvailable()` reports whether a targeting provider is present, so callers can skip registration.
 
-Client `GetStatus()` returns the API version, active framework, and the notification, progress, and target module states.
+`Config.TextUI` and `Config.Context` select `ox` through a started `ox_lib` resource. Their default `auto` selection uses native help text and a keyboard menu when the provider is absent. TextUI adapters implement `show(text, options, resource)`, `hide(resource)`, and `isOpen(resource)`. Context adapters implement `register(menu, resource)`, `show(id, resource)`, `hide(onExit, resource)`, and `getOpen(resource)`.
+
+`ShowTextUI(text, options)` and `HideTextUI()` return a boolean. `IsTextUIOpen()` returns `open, text` for the calling resource. The resource showing a prompt owns it until hidden or stopped.
+
+`RegisterContext(menu)` records a menu with `id`, `title`, `options`, and optional `onExit`, `menu`, and `canClose`. Each option supports `title`, `description`, `disabled`, `readOnly`, `onSelect`, `args`, and submenu `menu`. Ox menus also support provider fields such as `icon` and `metadata`. `ShowContext(id)` opens a registered menu, `HideContext(onExit)` closes the caller's menu, and `GetOpenContextMenu()` returns its original ID. Menu IDs are scoped to the calling resource. Resource stops close owned UI and clear its callbacks.
+
+`StartInputDialog(heading, rows, options)` opens an Ox input dialog inside a thread and returns a handle. Rows use the Ox input schema, including `type = 'number'`, `required`, `min`, and `max`. Poll `InputDialogResult(handle)` for `done, values`. Completion returns the submitted values table; cancellation and provider failure return nil. Resource stops close owned pending dialogs.
+
+Client `GetStatus()` returns the API version, active framework, and the notification, progress, target, TextUI, and context module states.
 
 ## License
 

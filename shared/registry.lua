@@ -6,6 +6,8 @@ BridgeRegistry = BridgeRegistry or {
     notify = {},
     progress = {},
     target = {},
+    textUI = {},
+    context = {},
 }
 
 local contracts = {
@@ -15,6 +17,8 @@ local contracts = {
     notify = {'notify'},
     progress = {'start', 'cancel', 'active'},
     target = {'addVehicle', 'removeVehicle'},
+    textUI = {'show', 'hide', 'isOpen'},
+    context = {'register', 'show', 'hide', 'getOpen'},
 }
 
 function BridgeRegistry.register(kind, name, adapter)
@@ -44,6 +48,12 @@ function BridgeRegistry.status(kind, name)
         if type(adapter[method]) ~= 'function' then return false, 'missing_method:' .. method end
     end
     return true
+end
+
+function BridgeRegistry.callable(value)
+    if type(value) == 'function' then return true end
+    local meta = type(value) == 'table' and getmetatable(value)
+    return type(meta) == 'table' and type(meta.__call) == 'function'
 end
 
 function BridgeRegistry.allowed(resource)

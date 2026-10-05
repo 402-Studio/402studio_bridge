@@ -4,7 +4,7 @@ game 'gta5'
 name '402studio_bridge'
 author '402-Studio'
 description 'Shared framework services for 402STUDIO resources'
-version '1.0.0'
+version '1.1.0'
 
 shared_scripts {
     'config.lua',

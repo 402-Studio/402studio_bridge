@@ -147,6 +147,27 @@ Resources own their schemas, persistence, item definitions, and gameplay rules. 
 
 Client `GetStatus()` returns the API version, active framework, and the notification, progress, target, TextUI, and context module states.
 
+## CDN uploads
+
+FiveManage and Qbox CDN uploads use server-created presigned URLs. Set the provider keys with server-only convars:
+
+```cfg
+set 402studio_bridge:fivemanageKey "YOUR_FIVEMANAGE_KEY"
+set 402studio_bridge:qboxKey "YOUR_QBOX_CDN_KEY"
+```
+
+| Server export | Result |
+| --- | --- |
+| `IsCdnAvailable(provider)` | Whether the CDN adapter is registered |
+| `CreateCdnUpload(provider)` | `{ provider, url, formField }` or `nil, errorCode` |
+| `ResolveCdnUpload(provider, result)` | `{ url, id }` or `nil, errorCode` from a successful server capture result |
+
+Provider names are `fivemanage` and `qbox`. Upload the file as multipart form data using the returned URL and form field. Pass the server capture result, with `status = 'success'` and the provider response in `response`, to `ResolveCdnUpload`. The final file URL can be saved with the player's identifier for a media library.
+
+Presigned requests time out after 10 seconds. FiveManage upload URLs expire after five minutes. API keys stay in server HTTP requests. Trusted resources use the same caller rules as the other bridge services.
+
+Additional providers register a `cdn` adapter with `target()` and `decode(result)` in `adapters/cdn/<provider>/server.lua`. `target()` returns `{ url, formField }`. `decode(result)` returns `{ url, id }`. Both may return `nil, errorCode`.
+
 ## License
 
 MIT. See `LICENSE`.

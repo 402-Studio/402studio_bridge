@@ -8,6 +8,7 @@ BridgeRegistry = BridgeRegistry or {
     target = {},
     textUI = {},
     context = {},
+    cdn = {},
 }
 
 local contracts = {
@@ -19,6 +20,7 @@ local contracts = {
     target = {'addVehicle', 'removeVehicle'},
     textUI = {'show', 'hide', 'isOpen'},
     context = {'register', 'show', 'hide', 'getOpen'},
+    cdn = {'target', 'decode'},
 }
 
 function BridgeRegistry.register(kind, name, adapter)

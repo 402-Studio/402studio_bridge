@@ -23,12 +23,15 @@ client_scripts {
 }
 
 server_scripts {
+    'server/cdn-support.lua',
     'adapters/framework/**/server.lua',
     'adapters/inventory/**/server.lua',
     'adapters/vehicle/**/server.lua',
+    'adapters/cdn/**/server.lua',
     'server/inventory.lua',
     'server/vehicle.lua',
     'server/main.lua',
+    'server/cdn.lua',
 }
 
 escrow_ignore {

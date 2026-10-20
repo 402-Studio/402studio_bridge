@@ -18,5 +18,6 @@ function BridgeInventory.call(action, source, item, count)
     if not selected or GetResourceState(Config.Inventory.resource) ~= 'started' then
         return nil, 'inventory_unavailable'
     end
+    if type(selected[action]) ~= 'function' then return nil, 'inventory_action_unavailable' end
     return selected[action](Config.Inventory.resource, source, item, count)
 end

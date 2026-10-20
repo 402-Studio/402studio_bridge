@@ -37,3 +37,7 @@ function BridgeVehicles.properties(vehicle)
     if not id then return nil end
     return adapter().properties(vehicle, id, Config.Vehicles)
 end
+
+function BridgeVehicles.class(model)
+    return BridgeVehicleClasses.get(model)
+end

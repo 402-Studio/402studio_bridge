@@ -34,6 +34,7 @@ Config = {
         stateKey = 'vehicleid',
         ownerField = 'citizenid',
     },
+    Capture = { adapter = 'screencapture', resource = 'screencapture' },
     Accounts = {
         cash = { esx = 'money', qb = 'cash', qbox = 'cash' },
         bank = { esx = 'bank', qb = 'bank', qbox = 'bank' },

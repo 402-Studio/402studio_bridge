@@ -205,6 +205,10 @@ function api.GetVehicleProperties(vehicle)
     return BridgeVehicles.properties(vehicle)
 end
 
+function api.GetVehicleClass(model)
+    return BridgeVehicles.class(model)
+end
+
 function api.GetVehicleOwner(src, vehicle)
     if not validPlayer(src) then return nil end
     return BridgeVehicles.owner(vehicle)
@@ -225,6 +229,18 @@ function api.AddItem(src, name, count)
     count = count or 1
     if not validPlayer(src) or type(name) ~= 'string' or name == '' or not amountValid(count) then return false end
     return BridgeInventory.call('add', src, name, count)
+end
+
+function api.CanCarryItem(src, name, count)
+    count = count or 1
+    if not validPlayer(src) or type(name) ~= 'string' or name == '' or not amountValid(count) then return false end
+    return BridgeInventory.call('canCarry', src, name, count)
+end
+
+function api.DropItem(src, name, count)
+    count = count or 1
+    if not validPlayer(src) or type(name) ~= 'string' or name == '' or not amountValid(count) then return false end
+    return BridgeInventory.call('drop', src, name, count)
 end
 
 function api.GetBalance(src, generic)

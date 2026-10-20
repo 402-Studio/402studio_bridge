@@ -4,7 +4,7 @@ Shared services for ESX, QBCore, Qbox, and standalone resources. Provides notifi
 
 ## Install
 
-Start the selected framework, then `402studio_bridge`, then the resources using it. Set framework providers in `config.lua` and add `dependency '402studio_bridge'` to consumer manifests. Resources named `402studio_*` with manifest author `402-Studio` are trusted automatically. Other resources use the replicated `402studio_bridge:allowedResources` convar.
+Start `ox_lib` and the selected framework, then `402studio_bridge`, then the resources using it. Set framework providers in `config.lua` and add `dependency '402studio_bridge'` to consumer manifests. Resources named `402studio_*` with manifest author `402-Studio` are trusted automatically. Other resources use the replicated `402studio_bridge:allowedResources` convar.
 
 ```cfg
 setr 402studio_bridge:allowedResources "my_resource,another_resource"
@@ -82,9 +82,16 @@ Exports return `result, errorCode`. Check explicit `true` for mutations and perm
 | `GetVehicleId(vehicle)` | Persistent numeric vehicle ID |
 | `GetVehicleOwner(source, vehicle)` | Raw owner identifier, matching `GetPlayer().identifier` |
 | `GetVehicleProperties(vehicle)` | Saved vehicle properties |
+| `GetVehicleClass(model)` | Cached GTA vehicle class for a model hash or name, available after a client supplies model data |
+| `RegisterCallback(name, callback)` | Registers a server callback owned by the calling resource |
 | `GetItemCount(source, item)` | Inventory item count |
 | `RemoveItem(source, item, count)` | Boolean; quantity defaults to one |
 | `AddItem(source, item, count)` | Boolean; quantity defaults to one |
+| `CanCarryItem(source, item, count)` | Inventory capacity check; quantity defaults to one |
+| `DropItem(source, item, count)` | Inventory drop result; quantity defaults to one |
+| `IsCaptureAvailable(kind)` | Availability for `snapshot` or `video` |
+| `CaptureSnapshotUpload(source, url, options, callback, mode)` | Uploads a screenshot through the configured capture provider |
+| `StartVideoCaptureUpload(source, url, options, callback)` | Starts a video upload through the configured capture provider |
 
 ```lua
 local bridge = exports['402studio_bridge']
@@ -130,6 +137,10 @@ Each adapter implements `connect(resource)`, `player(core, source)`, `data(playe
 Resources own their schemas, persistence, item definitions, and gameplay rules. Database dependencies belong in the resource that stores the data.
 
 ## Client API
+
+`StartCallback(name, delay, ...)` starts a server callback and returns its handle. `CallbackResult(handle)` returns `done, values, error`; completed values include `n` to preserve nil arguments. Handles belong to the calling resource.
+
+`IsCaptureAvailable(kind)` checks whether the configured capture resource is running. Configure `Capture = { adapter = 'screencapture', resource = 'screencapture' }` and start that resource for screenshot and video capture.
 
 `Notify(message, type, duration, title)` uses the active framework notification system. Standalone mode uses the GTA feed.
 

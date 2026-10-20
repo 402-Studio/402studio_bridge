@@ -8,6 +8,7 @@ BridgeRegistry = BridgeRegistry or {
     target = {},
     textUI = {},
     context = {},
+    capture = {},
     cdn = {},
 }
 
@@ -20,6 +21,7 @@ local contracts = {
     target = {'addVehicle', 'removeVehicle'},
     textUI = {'show', 'hide', 'isOpen'},
     context = {'register', 'show', 'hide', 'getOpen'},
+    capture = {'available', 'snapshot', 'video'},
     cdn = {'target', 'decode'},
 }
 
@@ -64,6 +66,6 @@ function BridgeRegistry.allowed(resource)
     local firstParty = Config.FirstParty
     if type(firstParty) ~= 'table' or type(firstParty.prefix) ~= 'string'
         or type(firstParty.author) ~= 'string' then return false end
-    return resource:sub(1, #firstParty.prefix) == firstParty.prefix
+    return resource:sub(1, #firstParty.prefix):lower() == firstParty.prefix:lower()
         and GetResourceMetadata(resource, 'author', 0) == firstParty.author
 end

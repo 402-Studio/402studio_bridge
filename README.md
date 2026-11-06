@@ -128,6 +128,22 @@ Each adapter implements `connect(resource)`, `player(core, source)`, `data(playe
 
 `Config.Vehicles` selects the vehicle adapter, resource, server state key, and owner field. The supplied `qbox` adapter reads `GetPlayerVehicle(id)` and validates the saved model against the entity. Vehicle adapters implement `id(vehicle, settings)`, `owner(vehicle, id, settings)`, and `properties(vehicle, id, settings)`. Owner identifiers use the same format as `GetPlayer().identifier`.
 
+For QBCore, select the `qb` vehicle adapter with `oxmysql`:
+
+```lua
+Config.Framework = 'qb'
+Config.Vehicles = {
+    adapter = 'qb',
+    resource = 'oxmysql',
+}
+```
+
+Start `oxmysql` and `qb-core` before the bridge. The adapter reads the standard
+`player_vehicles` table by the server vehicle plate and validates the model. It
+returns the row's numeric `id`, the owner's `citizenid`, and properties from
+`mods`. Vehicle IDs are cached for up to 60 seconds; missing registrations retry
+after 15 seconds. Owners and properties are read from the database on each request.
+
 `Config.Notify` selects a notification adapter. `auto` follows the active framework. Set `adapter` and optional `resource` to use any notification resource independently.
 
 `Config.Progress` selects the progress adapter. `auto` picks the first started resource in `priority`, falling back to `standalone`, which shows nothing. Supplied adapters are `ox` for `ox_lib` and `qb` for `progressbar`. Progress adapters implement `start(settings, resource)`, `cancel(id, resource)`, and `active()`. `start` blocks inside the bridge and returns true when the bar finished, false when the player cancelled, and nil when no bar was shown.

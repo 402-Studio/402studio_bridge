@@ -13,6 +13,7 @@ shared_scripts {
 }
 
 client_scripts {
+    'adapters/inventory/**/client.lua',
     'adapters/notify/**/client.lua',
     'adapters/progress/**/client.lua',
     'adapters/target/**/client.lua',

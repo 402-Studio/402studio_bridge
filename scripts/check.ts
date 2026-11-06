@@ -17,7 +17,7 @@ if (!manifest.includes("name '402studio_bridge'") ||
 
 for (const [block, required] of Object.entries({
   shared_scripts: ["@ox_lib/init.lua"],
-  client_scripts: ["client/callback.lua", "client/capture.lua", "client/vehicle-classes.lua"],
+  client_scripts: ["adapters/inventory/**/client.lua", "client/callback.lua", "client/capture.lua", "client/vehicle-classes.lua"],
   server_scripts: ["adapters/capture/**/server.lua", "server/callback.lua", "server/capture.lua", "server/vehicle-classes.lua"],
   dependencies: ["ox_lib"],
 })) {
@@ -49,7 +49,7 @@ const result = spawnSync(process.env.LUAC ?? "luac", ["-p", ...files], {
 });
 if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status ?? 1);
-for (const file of ["tests/services.test.lua", "tests/inventory.test.lua", "tests/vehicle-classes.test.lua"]) {
+for (const file of ["tests/services.test.lua", "tests/inventory.test.lua", "tests/vehicle-classes.test.lua", "tests/vehicle-qb.test.lua"]) {
   const test = spawnSync(process.env.LUA ?? "lua", [join(root, file), root], {
     stdio: "inherit",
   });

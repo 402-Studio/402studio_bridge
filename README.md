@@ -175,6 +175,8 @@ Resources own their schemas, persistence, item definitions, and gameplay rules. 
 
 `AddVehicleTarget(options)` registers vehicle target options through the active targeting resource and `RemoveVehicleTarget(names)` removes them. `TargetAvailable()` reports whether a targeting provider is present, so callers can skip registration.
 
+`AddModelTarget(models, options)` registers options for model names or hashes through Ox Target or QB Target. Models accept a single value or a list. Options use `name`, `label`, `icon`, `distance`, `canInteract(entity)`, and `onSelect(entity)`. `RemoveModelTarget(models, names)` removes options owned by the caller. The bridge removes registrations when their owner or provider stops. QB Target uses the display label as its key, so bridge options on the same model need unique labels. Custom adapters can implement `addModel(models, options, resource)` and `removeModel(models, names, resource)`.
+
 `Config.TextUI` and `Config.Context` select `ox` through a started `ox_lib` resource. Their default `auto` selection uses native help text and a keyboard menu when the provider is absent. TextUI adapters implement `show(text, options, resource)`, `hide(resource)`, and `isOpen(resource)`. Context adapters implement `register(menu, resource)`, `show(id, resource)`, `hide(onExit, resource)`, and `getOpen(resource)`.
 
 `ShowTextUI(text, options)` and `HideTextUI()` return a boolean. `IsTextUIOpen()` returns `open, text` for the calling resource. The resource showing a prompt owns it until hidden or stopped.

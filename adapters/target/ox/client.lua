@@ -21,4 +21,23 @@ BridgeRegistry.register('target', 'ox', {
         exports[resource]:removeGlobalVehicle(names)
         return true
     end,
+    addModel = function(models, options, resource)
+        if GetResourceState(resource) ~= 'started' then return false end
+        local built = {}
+        for index, option in ipairs(options) do
+            built[index] = {
+                name = option.name,
+                label = option.label,
+                icon = option.icon,
+                distance = option.distance,
+                canInteract = option.canInteract,
+                onSelect = function(data) option.onSelect(data.entity) end,
+            }
+        end
+        return exports[resource]:addModel(models, built) ~= false
+    end,
+    removeModel = function(models, names, resource)
+        if GetResourceState(resource) ~= 'started' then return false end
+        return exports[resource]:removeModel(models, names) ~= false
+    end,
 })

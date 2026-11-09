@@ -9,6 +9,26 @@ local function allowed()
     return not caller or BridgeRegistry.allowed(caller)
 end
 
+exports('UseItem', function(data, callback)
+    if not allowed() then return false, 'forbidden_resource' end
+    if type(data) ~= 'table' or type(data.slot) ~= 'number' or data.slot % 1 ~= 0
+        or data.slot < 1 or data.slot > 10000 or not BridgeRegistry.callable(callback) then
+        return false, 'invalid_item'
+    end
+    local name, resource = BridgeRegistry.resolveInventory()
+    local adapter = BridgeRegistry.get('inventoryUse', name)
+    if not adapter or type(resource) ~= 'string' or resource == ''
+        or GetResourceState(resource) ~= 'started' then return false, 'inventory_unavailable' end
+    local called = false
+    local ok, result = pcall(adapter.use, resource, data, function(used)
+        if called then return end
+        called = true
+        callback(used == true or type(used) == 'table')
+    end)
+    if not ok then return false, 'provider_error' end
+    return result == true
+end)
+
 exports('Notify', function(message, kind, duration, title)
     if not allowed() then return false, 'forbidden_resource' end
     if type(message) ~= 'string' or message == '' then return false, 'invalid_message' end

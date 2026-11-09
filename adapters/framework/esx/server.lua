@@ -20,17 +20,24 @@ BridgeRegistry.register('framework', 'esx', {
         return data and data.money or 0
     end,
     remove = function(_, player, _, account, amount, reason)
+        if BridgeRegistry.callable(player.chargeAccount) then
+            return player.chargeAccount(account, amount, reason) == true
+        end
         local before = player.getAccount(account)
         if not before or before.money < amount then return false end
         local balance = before.money
-        player.removeAccountMoney(account, amount, reason)
-        return player.getAccount(account).money == balance - amount
+        local removed = player.removeAccountMoney(account, amount, reason)
+        if type(removed) == 'boolean' then return removed end
+        local after = player.getAccount(account)
+        return after ~= nil and after.money == balance - amount
     end,
     add = function(_, player, _, account, amount, reason)
         local before = player.getAccount(account)
         if not before then return false end
         local balance = before.money
-        player.addAccountMoney(account, amount, reason)
-        return player.getAccount(account).money == balance + amount
+        local added = player.addAccountMoney(account, amount, reason)
+        if type(added) == 'boolean' then return added end
+        local after = player.getAccount(account)
+        return after ~= nil and after.money == balance + amount
     end,
 })

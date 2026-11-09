@@ -1,7 +1,7 @@
 BridgeRegistry.register('notify', 'qbox', {
     notify = function(resource, message, kind, duration, title)
-        local content = title and {title = title, description = message} or message
-        exports[resource]:Notify(content, kind == 'warn' and 'warning' or kind, duration)
+        local style = kind == 'warn' and 'warning' or kind == 'info' and 'inform' or kind
+        exports[resource]:Notify(title or message, style, duration, title and message or nil)
         return true
     end,
 })

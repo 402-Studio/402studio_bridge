@@ -86,8 +86,11 @@ Exports return `result, errorCode`. Check explicit `true` for mutations and perm
 | `RegisterCallback(name, callback)` | Registers a server callback owned by the calling resource |
 | `GetItemCount(source, item)` | Inventory item count |
 | `RemoveItem(source, item, count)` | Boolean; quantity defaults to one |
-| `AddItem(source, item, count)` | Boolean; quantity defaults to one |
-| `CanCarryItem(source, item, count)` | Inventory capacity check; quantity defaults to one |
+| `AddItem(source, item, count, metadata)` | Boolean; quantity defaults to one; optional metadata table |
+| `CanCarryItem(source, item, count, metadata)` | Inventory capacity check; quantity defaults to one; optional metadata table |
+| `GetInventoryItem(source, slot)` | Item record from a positive integer inventory slot, including metadata |
+| `RegisterUsableItem(item, callback)` | Registers a server item-use callback owned by the caller. The callback receives the player source and inventory slot. |
+| `IsInventoryItemUseAvailable(item)` | Checks item-use availability for the caller and selected adapter |
 | `DropItem(source, item, count)` | Inventory drop result; quantity defaults to one |
 | `IsCaptureAvailable(kind)` | Availability for `snapshot` or `video` |
 | `CaptureSnapshotUpload(source, url, options, callback, mode)` | Uploads a screenshot through the configured capture provider |
@@ -120,11 +123,17 @@ adapters/<module>/<provider>/<context>.lua
 
 Built-in providers use `adapters/framework`, `adapters/inventory`, `adapters/vehicle`, `adapters/notify`, `adapters/progress`, `adapters/target`, `adapters/text-ui`, and `adapters/context`. Custom frameworks use only `Config.CustomFramework`.
 
-Register every adapter through `BridgeRegistry.register(kind, name, adapter)`. Supported kinds are `framework`, `inventory`, `vehicle`, `notify`, `progress`, `target`, `textUI`, and `context`. The registry validates each contract during resource startup.
+Register every adapter through `BridgeRegistry.register(kind, name, adapter)`. Supported kinds are `framework`, `inventory`, `inventoryUse`, `vehicle`, `notify`, `progress`, `target`, `textUI`, and `context`. The registry validates each contract during resource startup.
 
 Each adapter implements `connect(resource)`, `player(core, source)`, `data(player)`, `group(core, player, source, groups)`, `balance(core, player, source, account)`, `remove(core, player, source, account, amount, reason)`, and `add` with the same arguments as `remove`. Operations must finish synchronously. Mutations return true only after applying the exact amount; false must leave the account unchanged. Return fresh normalized data from `data`.
 
-`Config.Inventory` selects an adapter and resource name. The supplied `ox` adapter supports Ox Inventory and renamed installations. Inventory adapters implement `count(resource, source, item)`, `remove(resource, source, item, count)`, and `add(resource, source, item, count)`.
+`Config.Inventory` selects an adapter and resource name independently of the framework. `auto` picks the first started resource in `priority`. The default order is `ox_inventory`, then `qb-inventory`. Set `adapter` and `resource` to pin a provider, including compatible renamed installations. Inventory adapters implement `count(resource, source, item)`, `remove(resource, source, item, count)`, and `add(resource, source, item, count, metadata)`.
+
+Optional inventory methods are `canCarry(resource, source, item, count, metadata)`, `getSlot(resource, source, slot)`, and `drop(resource, source, item, count)`. Set `metadata = true` when the adapter preserves item metadata. Server inventory status includes `ready`, `metadata`, `slots`, and `usable`. Unsupported operations return `inventory_action_unavailable`; metadata requires `metadata = true`, otherwise the call returns `inventory_metadata_unavailable`. Unavailable providers return `inventory_unavailable`.
+
+Ox Inventory uses `UseItem` on the client. QB Inventory uses `RegisterUsableItem` on the server with `qb-core` and a usable item definition. Register the handler when the consuming resource starts and when the bridge starts. Registration can wait for the inventory provider. `IsInventoryItemUseAvailable` checks whether it is active. The server inventory status field `serverUse` identifies providers that use server registration.
+
+Custom inventory providers register an `inventory` adapter for server operations. For item use, add an `inventoryUse` adapter with `use(resource, data, callback)` or implement `registerUse(resource, item, callback)` in the server adapter. Set `usable = true` on the server adapter when item use is available.
 
 `Config.Vehicles` selects the vehicle adapter, resource, server state key, and owner field. The supplied `qbox` adapter reads `GetPlayerVehicle(id)` and validates the saved model against the entity. Vehicle adapters implement `id(vehicle, settings)`, `owner(vehicle, id, settings)`, and `properties(vehicle, id, settings)`. Owner identifiers use the same format as `GetPlayer().identifier`.
 
@@ -153,6 +162,8 @@ after 15 seconds. Owners and properties are read from the database on each reque
 Resources own their schemas, persistence, item definitions, and gameplay rules. Database dependencies belong in the resource that stores the data.
 
 ## Client API
+
+`UseItem(data, callback)` passes item data with a positive integer `slot` to the configured inventory provider. It returns true when the provider accepts the request. The callback runs at most once with a boolean use result. Inventory item definitions point their client export at the consuming resource, which calls this bridge export before opening its item UI.
 
 `StartCallback(name, delay, ...)` starts a server callback and returns its handle. `CallbackResult(handle)` returns `done, values, error`; completed values include `n` to preserve nil arguments. Handles belong to the calling resource.
 

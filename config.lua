@@ -27,7 +27,11 @@ Config = {
         resources = { ox = 'ox_target', qb = 'qb-target' },
         priority = { 'ox', 'qb' },
     },
-    Inventory = { adapter = 'ox', resource = 'ox_inventory' },
+    Inventory = {
+        adapter = 'auto',
+        resources = { ox = 'ox_inventory', qb = 'qb-inventory' },
+        priority = { 'ox', 'qb' },
+    },
     Vehicles = {
         adapter = 'qbox',
         resource = 'qbx_vehicles',

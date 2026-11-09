@@ -119,10 +119,10 @@ end
 
 local function balance(p, src, name)
     local value = adapter.balance(core, p, src, name)
-    if type(value) ~= 'number' or value ~= value or value < 0 or value == math.huge then
+    if type(value) ~= 'number' or value ~= value or math.abs(value) == math.huge then
         error('invalid_balance')
     end
-    return math.floor(value)
+    return math.max(0, math.floor(value))
 end
 
 local function permission(src, rule)
@@ -225,16 +225,37 @@ function api.RemoveItem(src, name, count)
     return BridgeInventory.call('remove', src, name, count)
 end
 
-function api.AddItem(src, name, count)
+function api.AddItem(src, name, count, metadata)
     count = count or 1
     if not validPlayer(src) or type(name) ~= 'string' or name == '' or not amountValid(count) then return false end
-    return BridgeInventory.call('add', src, name, count)
+    if metadata ~= nil and type(metadata) ~= 'table' then return false, 'invalid_metadata' end
+    return BridgeInventory.call('add', src, name, count, metadata)
 end
 
-function api.CanCarryItem(src, name, count)
+function api.CanCarryItem(src, name, count, metadata)
     count = count or 1
     if not validPlayer(src) or type(name) ~= 'string' or name == '' or not amountValid(count) then return false end
-    return BridgeInventory.call('canCarry', src, name, count)
+    if metadata ~= nil and type(metadata) ~= 'table' then return false, 'invalid_metadata' end
+    return BridgeInventory.call('canCarry', src, name, count, metadata)
+end
+
+function api.GetInventoryItem(src, slot)
+    if not validPlayer(src) or type(slot) ~= 'number' or slot % 1 ~= 0 or slot < 1 or slot > 10000 then
+        return nil, 'invalid_slot'
+    end
+    return BridgeInventory.call('getSlot', src, slot)
+end
+
+function api.RegisterUsableItem(name, callback, owner)
+    if type(name) ~= 'string' or name == '' or #name > 100 or not BridgeRegistry.callable(callback) then
+        return false, 'invalid_item'
+    end
+    return BridgeInventory.registerUse(owner, name, callback)
+end
+
+function api.IsInventoryItemUseAvailable(name, owner)
+    if type(name) ~= 'string' or name == '' or #name > 100 then return false end
+    return BridgeInventory.itemUseAvailable(owner, name)
 end
 
 function api.DropItem(src, name, count)
@@ -318,6 +339,10 @@ for name, method in pairs(api) do
         if name == 'Charge' or name == 'AddMoney' then
             args[4] = caller .. ':' .. tostring(args[4] or name):sub(1,80)
             args.n = 4
+        elseif name == 'RegisterUsableItem' then
+            args[3], args.n = caller, 3
+        elseif name == 'IsInventoryItemUseAvailable' then
+            args[2], args.n = caller, 2
         end
         local ok, result, err = pcall(method, table.unpack(args,1,args.n))
         if not ok then return nil, 'provider_error' end

@@ -1,7 +1,9 @@
 BridgeRegistry.register('notify', 'qb', {
-    notify = function(resource, message, kind, duration)
+    notify = function(resource, message, kind, duration, title)
         local core = exports[resource]:GetCoreObject()
-        core.Functions.Notify(message, kind == 'info' and 'primary' or kind, duration)
+        local style = kind == 'info' and 'primary' or kind == 'warn' and 'warning' or kind
+        local content = title and { text = title, caption = message } or message
+        core.Functions.Notify(content, style, duration)
         return true
     end,
 })

@@ -2,6 +2,7 @@ BridgeApiVersion = 1
 BridgeRegistry = BridgeRegistry or {
     framework = {},
     inventory = {},
+    inventoryUse = {},
     vehicle = {},
     notify = {},
     progress = {},
@@ -15,6 +16,7 @@ BridgeRegistry = BridgeRegistry or {
 local contracts = {
     framework = {'connect', 'player', 'data', 'group', 'balance', 'remove', 'add'},
     inventory = {'count', 'remove', 'add'},
+    inventoryUse = {'use'},
     vehicle = {'id', 'owner', 'properties'},
     notify = {'notify'},
     progress = {'start', 'cancel', 'active'},
@@ -41,6 +43,20 @@ end
 function BridgeRegistry.get(kind, name)
     local adapters = BridgeRegistry[kind]
     return type(adapters) == 'table' and adapters[name] or nil
+end
+
+function BridgeRegistry.resolveInventory()
+    local inventory = Config.Inventory
+    if type(inventory) ~= 'table' then return end
+    local resources = type(inventory.resources) == 'table' and inventory.resources or {}
+    if inventory.adapter ~= 'auto' then return inventory.adapter, inventory.resource or resources[inventory.adapter] end
+    for _, name in ipairs(inventory.priority or {}) do
+        local resource = resources[name]
+        if type(resource) == 'string' and resource ~= '' and GetResourceState(resource) == 'started' then
+            return name, resource
+        end
+    end
+    return 'auto'
 end
 
 function BridgeRegistry.status(kind, name)

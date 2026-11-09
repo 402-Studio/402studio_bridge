@@ -1,15 +1,20 @@
 BridgeRegistry.register('inventory', 'ox', {
+    metadata = true,
+    usable = true,
     count = function(resource, source, item)
         return exports[resource]:GetItemCount(source, item) or 0
     end,
     remove = function(resource, source, item, count)
         return exports[resource]:RemoveItem(source, item, count) == true
     end,
-    add = function(resource, source, item, count)
-        return exports[resource]:AddItem(source, item, count) == true
+    add = function(resource, source, item, count, metadata)
+        return exports[resource]:AddItem(source, item, count, metadata) == true
     end,
-    canCarry = function(resource, source, item, count)
-        return exports[resource]:CanCarryItem(source, item, count) == true
+    canCarry = function(resource, source, item, count, metadata)
+        return exports[resource]:CanCarryItem(source, item, count, metadata) == true
+    end,
+    getSlot = function(resource, source, slot)
+        return exports[resource]:GetSlot(source, slot)
     end,
     drop = function(resource, source, item, count)
         local ped = GetPlayerPed(source)

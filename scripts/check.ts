@@ -49,7 +49,7 @@ const result = spawnSync(process.env.LUAC ?? "luac", ["-p", ...files], {
 });
 if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status ?? 1);
-for (const file of ["tests/services.test.lua", "tests/inventory.test.lua", "tests/vehicle-classes.test.lua", "tests/vehicle-qb.test.lua"]) {
+for (const file of ["tests/services.test.lua", "tests/inventory.test.lua", "tests/vehicle-classes.test.lua", "tests/vehicle-qb.test.lua", "tests/frameworks.test.lua"]) {
   const test = spawnSync(process.env.LUA ?? "lua", [join(root, file), root], {
     stdio: "inherit",
   });
